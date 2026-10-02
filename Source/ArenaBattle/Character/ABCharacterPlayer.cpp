@@ -44,7 +44,7 @@ AABCharacterPlayer::AABCharacterPlayer()
     GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -88.0f), FRotator(0.0f, -90.0f, 0.0f));
     
     //메시 에셋 지정
-    static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMesh(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"));
+    static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMesh(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
 
     if (CharacterMesh.Succeeded())
     {
@@ -54,7 +54,7 @@ AABCharacterPlayer::AABCharacterPlayer()
 
     //애님 블루프린트 검색 및 설정
     static ConstructorHelpers::FClassFinder<UAnimInstance> CharacterAnim(
-        TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C")
+        TEXT("/Game/ArenaBattle/Animation/ABP_ABCharacter.ABP_ABCharacter_C")
     );
 
     //검색에 성공하면 클래스 정보 설정
