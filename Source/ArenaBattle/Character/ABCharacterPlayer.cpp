@@ -98,6 +98,14 @@ AABCharacterPlayer::AABCharacterPlayer()
         ChangeControlAction= ChangeControlActionRef.Object;
     }
 
+    static ConstructorHelpers::FObjectFinder<UInputAction> AttackActionRef(TEXT("/Game/ArenaBattle/Input/Actions/IA_Attack.IA_Attack"));
+
+    if (AttackActionRef.Succeeded())
+    {
+        AttackAction = AttackActionRef.Object;
+    }
+
+
     //기본 컨트롤 설정
     CurrentCharacterControlType = ECharacterControlType::Shoulder;
 }
@@ -141,6 +149,9 @@ void AABCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
         EnhancedInputComponent->BindAction(ChangeControlAction, ETriggerEvent::Started,
             this, &AABCharacterPlayer::ChangeCharacterControl);
+
+        EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered,
+            this, &AABCharacterPlayer::Attack);
 
     }
 
@@ -275,4 +286,9 @@ void AABCharacterPlayer::ChangeCharacterControl()
     {
         SetCharacterControl(ECharacterControlType::Shoulder);
     }
+}
+
+void AABCharacterPlayer::Attack()
+{
+    ProcessComboCommand();
 }
