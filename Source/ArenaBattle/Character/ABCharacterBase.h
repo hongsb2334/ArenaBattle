@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <Interface/ABAnimationAttackInterface.h>
+#include <Interface/ABCharacterWidgetInterface.h>
 #include <Containers/Map.h>
 #include "ABCharacterBase.generated.h"
 
@@ -18,7 +19,7 @@ enum class ECharacterControlType : uint8
 
 
 UCLASS()
-class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface
+class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface
 {
 	GENERATED_BODY()
 
@@ -27,6 +28,12 @@ public:
 	AABCharacterBase();
 
 protected:
+
+    //컴포넌트 초기화가 끝났을 때 호출되는 함수
+    //-> 즉, 액터의 초기화가 끝난 시점
+    virtual void PostInitializeComponents () override;
+
+
     //액터가 데미지 받았을 때 호출되는 함수(Actor에서 파생됨)
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -43,6 +50,10 @@ protected:
 	
     //컨트롤 데이터 설정
     virtual void SetCharacterControlData(const class UABCharacterData* InCharacterData);
+
+    //
+    virtual void SetupCharacterWidget(class UABUserWidget* InUserWidget) override;
+
 
     //콤보 공격 처리 함수
     //공격 처음 시작할 때와 콤보 액션 진행할 때 실행
@@ -95,5 +106,16 @@ protected:
     //죽은 뒤에 약간의 시간을 대기(딜레이)한 후 삭제
     float DeadEventDelayTime = 5.0f;
 
+
+protected:
+    //스탯 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class UABCharacterStatComponent> Stat;
+
+
+    //위젯 컴포넌트
+    //스탯 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class UABWidgetComponent> HpBar;
 
 };

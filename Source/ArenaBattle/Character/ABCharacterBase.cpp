@@ -8,6 +8,11 @@
 #include <Components/CapsuleComponent.h>
 #include <Physics/ABCollision.h>
 #include <Engine/DamageEvents.h>
+
+#include <CharacterStat/ABCharacterStatComponent.h>
+#include <UI/ABWidgetComponent.h>
+#include <UI/ABHpBarWidget.h>
+
 // Sets default values
 AABCharacterBase::AABCharacterBase()
 {
@@ -62,6 +67,52 @@ AABCharacterBase::AABCharacterBase()
         DeadMontage = DeadMontageRef.Object;
     }
 
+    //스탯/위젯 컴포넌트 생성 및 설정
+    //액터가 컴포넌트를 가지는 형태를 "컴포지션이라고 함"
+    
+    //스탯 컴포넌트 생성 (액터 컴포넌트여서 계층설정 필요 없음)
+    Stat = CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("Stat"));
+    
+
+    //위젯 컴포넌트 생성
+    HpBar = CreateDefaultSubobject<UABWidgetComponent>(TEXT("Widget"));
+    
+    //위젯 컴포넌트는 씬 컴포넌트(트랜스폼을 가짐)여서 계층설정 필요
+    HpBar->SetupAttachment(GetMesh());
+    //캐릭터 머리 위에 보이게 z 위치 조정
+    HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+    
+    //위젯 설정
+    //WBP_HPBar-> UABHpBarWidget -> UABUserWidget -> UUserWidget...
+    static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/ArenaBattle/UI/WBP_HPBar.WBP_HPBar_C"));
+
+    if (HpBarWidgetRef.Succeeded())
+    {
+        //생성할 위젯 클래스 설정(타입 설정)
+        HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+
+        //UI가 그려질 공간 설정(화면 공간)
+        HpBar->SetWidgetSpace(EWidgetSpace::Screen);
+
+        //UI가 그려질 크기 설정, 150픽셀이 가로, 15픽셀이 세로
+        HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
+
+        //콜리전 끄기
+        HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    }
+
+
+
+
+}
+
+void AABCharacterBase::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    //델리게이트에 함수 등록
+    Stat->OnHpZero.AddUObject(this, &AABCharacterBase::SetDead);
 }
 
 float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -71,7 +122,9 @@ float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
 
     //데미지를 받으면 죽음 처리 함수 호출
-    SetDead();
+    //SetDead();
+    //전달받은 데미지를 스탯 컴포넌트에 전달, 데미지 적용
+    Stat->ApplyDamage(DamageAmount);
     
     return DamageAmount;
 }
@@ -119,6 +172,21 @@ void AABCharacterBase::SetCharacterControlData(const UABCharacterData* InCharact
 
     GetCharacterMovement()->RotationRate = InCharacterData->RotationRate;
 
+}
+
+void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
+{
+    //HPBar 위젯에 필요한 데이터 설정 및 델리게이트 등록 처리
+    UABHpBarWidget* HpBarWidget = Cast<UABHpBarWidget>(InUserWidget);
+    if (HpBarWidget)
+    {
+        //데이터 설정
+        HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+        HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
+
+        //델리게이트등록
+        Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
+    }
 }
 
 void AABCharacterBase::ProcessComboCommand()
