@@ -13,7 +13,7 @@ UCLASS()
 class ARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase
 {
 	GENERATED_BODY()
-	
+	    
 public:
     AABCharacterNonPlayer();
 
