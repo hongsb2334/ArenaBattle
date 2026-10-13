@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include <GameData/ABCharacterStat.h>
 #include "ABCharacterStatComponent.generated.h"
 
 //델리게이트 선언
@@ -25,8 +26,30 @@ protected:
 
 public:
     //getter
-    FORCEINLINE float GetMaxHp() const { return MaxHp; }
+    
+    //FORCEINLINE float GetMaxHp() const { return MaxHp; }
+    
+    //레벨을 설정하고 기본 스탯 정보를 업데이트하는 함수
+    void SetLevelStat(int32 InNewLevel);
+    
+    //현재 레벨 반환 함수
+
+    FORCEINLINE int32 GetCurrentLevel() const { return CurrentLevel; }
+
     FORCEINLINE float GetCurrentHp() const { return CurrentHp; }
+
+    //부가 스탯 데이터  설정 함수
+
+    FORCEINLINE void SetModifierStat(const FABCharacterStat& InModifierStat)
+    {
+        ModifierStat = InModifierStat;
+    }
+
+    // 기본 + 부가 스탯을 합친 전체 스탯 데이터 반환 함수
+    FORCEINLINE FABCharacterStat GetTotalStat() const
+    {
+        return BaseStat + ModifierStat;
+    }
 
     //데미지 적용 함수(Setter)
     float ApplyDamage(float InDamage);
@@ -43,15 +66,27 @@ public:
     FOnHpChangedDelegate OnHpChanged;
 
 protected:
-    //최대 체력 값
-    UPROPERTY(VisibleInstanceOnly, Category = "Stat")
-    float MaxHp;
+
+    //기존에 임시로 사용하던 속성 제거
+    ////최대 체력 값
+    //UPROPERTY(VisibleInstanceOnly, Category = "Stat")
+    //float MaxHp;
 
     //현재 체력 값
-    UPROPERTY(VisibleInstanceOnly, Category = "Stat")
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
     float CurrentHp;
 
-    //현재 체력 값
-
+    //캐릭터 레벨
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
+    int32 CurrentLevel;
 		
+    //캐릭터의 기본 스탯 데이터
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
+    FABCharacterStat BaseStat;
+
+    //캐릭터의 부가 스탯 데이터
+
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
+    FABCharacterStat ModifierStat;
+
 };

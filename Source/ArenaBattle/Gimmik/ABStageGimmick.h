@@ -28,6 +28,11 @@ public:
     // Sets default values for this actor's properties
     AABStageGimmick();
 
+public:
+    FORCEINLINE int32 GetStageNum() const { return CurrentStageNum; }
+    FORCEINLINE void SetStageNum(int32 NewStageNum) { CurrentStageNum = NewStageNum; }
+
+
 protected:
     //액터의 상태가 변경될 때 엔진에서 호출해주는 ㅏ함수
     virtual void OnConstruction(const FTransform& Transform) override;
@@ -119,4 +124,38 @@ protected:
 
     //타이머 종료 후에 NPC 생성에 사용할 함수
     void OnOpponentSpawn();
+
+    //보상 관련 섹션
+protected:
+    //아이템 상자를 생성하기 위한 클래스 타입
+    UPROPERTY(VisibleAnywhere, Category = "Reward", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<class AABItemBox> RewardBoxClass;
+    
+    //4개의 보상 상자 생성
+    //생성된 4개의 액터를 저장하기 위한 배열
+    //생성하는 아이템 상자와 스테이지 기믹 액터와는 소유관계가 없기 때문에 약참조하는게 좋음(weakptr)
+    UPROPERTY(VisibleAnywhere, Category = "Reward", meta = (AllowPrivateAccess = "true"))
+    TArray<TWeakObjectPtr<class AABItemBox>> RewardBoxes;
+    
+    //아이템 상자를 생성할 4곳의 생성 위치
+    TMap<FName, FVector> RewardBoxLocations;
+
+    //생성된 아이템 상자와 오버랩 반응을 하면 실행할 함수
+    UFUNCTION()
+    void OnRewardTriggerBeginOverlap(
+        UPrimitiveComponent* OverlappedComponent,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult
+    );
+
+    //아이템 상자 생성 함수
+    void SpawnRewardBoxes();
+
+    //스테이지 섹션
+    protected:
+        UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"));
+        int32 CurrentStageNum;
 };

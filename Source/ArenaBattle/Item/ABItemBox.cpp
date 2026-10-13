@@ -2,6 +2,7 @@
 
 
 #include "Item/ABItemBox.h"
+#include "Item/ABItemData.h"
 #include <Physics/ABCollision.h>
 #include <Interface/ABCharacterItemInterface.h>
 
@@ -10,6 +11,7 @@
 #include <Components/BoxComponent.h>
 #include <Components/StaticMeshComponent.h>
 #include <Particles/ParticleSystemComponent.h>
+#include <Engine/AssetManager.h>
 
 // Sets default values
 AABItemBox::AABItemBox()
@@ -28,8 +30,8 @@ AABItemBox::AABItemBox()
     //박스 컴포넌트에 콜리전 프로필 설정
     Trigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);
 
-    //박스 컴포넌트의 BeginOverlap 델리게이트에 함수 등록
-    Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin);
+    ////박스 컴포넌트의 BeginOverlap 델리게이트에 함수 등록
+    //Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin);
 
     //박스 충돌 영역 크기 조정
     Trigger->SetBoxExtent(FVector(40.0f, 45.0f, 32.0f));
@@ -62,6 +64,44 @@ AABItemBox::AABItemBox()
         //바로 재생하지 않도록 설정
         Effect->bAutoActivate = false;
     }
+
+}
+
+void AABItemBox::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    //박스 컴포넌트의 BeginOverlap 델리게이트에 함수 등록
+    Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin);
+
+    //에셋 매니저를 통해서 사용할 에셋 목록 가져오기
+    UAssetManager& Manager = UAssetManager::Get();
+
+    //설정한 에셋 태그를 활용해 에셋 목록 가져오기
+    TArray<FPrimaryAssetId> Assets;
+    Manager.GetPrimaryAssetIdList(TEXT("ABItemData"), Assets);
+
+    ensureAlways(Assets.Num() > 0);
+
+    //랜덤으로 선택, 인덱스라 -1 
+    int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+
+    //선택된 인덱스로 접근해서 에셋 참조
+    FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
+
+    //에셋 로드
+    if (AssetPtr.IsPending())
+    {
+        //동기 로드
+        AssetPtr.LoadSynchronous();
+    }
+
+    //로드한 에셋을 기반으로 아이템 데이터 설정
+    Item = Cast<UABItemData>(AssetPtr.Get());
+
+    //캐스팅 후 다시 확인 - 아이템 값이 제대로 설정됐는지
+    ensureAlways(Item);
+
 
 }
 

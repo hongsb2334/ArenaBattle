@@ -34,6 +34,11 @@ public:
 	// Sets default values for this character's properties
 	AABCharacterBase();
 
+    //스탯
+public:
+    int32 GetLevel() const;
+    void SetLevel(int32 InNewLevel);
+
 protected:
 
     //컴포넌트 초기화가 끝났을 때 호출되는 함수
@@ -141,5 +146,7 @@ protected:
 
     //아이템 수집처리에 사용할 델리게이트 배열
     TArray<FOnTakeItemDelegate> TakeItemActions;
+
+
 
 };

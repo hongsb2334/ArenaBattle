@@ -194,6 +194,10 @@ void AABCharacterBase::EquipWeapon(UABItemData* InItemData)
 
         //Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh);
         Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh.Get());
+
+        //무기 아이템이 제공하는 부가 스탯 적용
+        Stat->SetModifierStat(WeaponItemData->ModifierStat);
+
     }
         
 }
@@ -256,7 +260,7 @@ void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
     if (HpBarWidget)
     {
         //데이터 설정
-        HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+        HpBarWidget->SetMaxHp(Stat->GetTotalStat().MaxHp);
         HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
 
         //델리게이트등록
@@ -299,7 +303,8 @@ void AABCharacterBase::ComboActionBegin()
     if (AnimInstance)
     {
         //몽타주 재생 속도
-        const float AttackSpeedRate = 1.0f;
+        //콤보 타이머(SetComboCheckTimer)와 같은 값을 써야 입력 타이밍이 맞음
+        const float AttackSpeedRate = Stat->GetTotalStat().AttackSpeed;
         //몽타주 재생
         AnimInstance->Montage_Play(ComboAttackMontage, AttackSpeedRate);
 
@@ -342,7 +347,8 @@ void AABCharacterBase::SetComboCheckTimer()
 
     //애니메이션 재생속도
     //2배속 등 배속까지 계산
-    const float AttackSpeedRate = 1.0f;
+    //const float AttackSpeedRate = 1.0f;
+    const float AttackSpeedRate = Stat->GetTotalStat().AttackSpeed;
 
     //콤보 공격 입력 시간(초단위) 계산
     float ComboEffectTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate / AttackSpeedRate);
@@ -398,10 +404,10 @@ void AABCharacterBase::AttackHitCheck()
     FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
     //공격 범위
-    const float AttackRange = 120.0f;
+    const float AttackRange = Stat->GetTotalStat().AttackRange;
 
     //트레이스에 사용할 구체의 반지름
-    const float AttackRadius = 20.0f;
+    const float AttackRadius = 50.0f;
 
     //트레이스 시작 위치
     //액터의 위치 + 캡슐 높이의 반지름 만큼 앞으로 떨어지는 위치
@@ -419,7 +425,9 @@ void AABCharacterBase::AttackHitCheck()
     if (HitDetected)
     {
         //전달할 데미지
-        const float AttackDamage = 30.0f;
+        //const float AttackDamage = 100.0f;
+        const float AttackDamage = Stat->GetTotalStat().Attack;
+
 
         //데미지 이벤트 변수
         FDamageEvent DamageEvent;
@@ -456,6 +464,16 @@ void AABCharacterBase::AttackHitCheck()
 #endif
 
 
+}
+
+int32 AABCharacterBase::GetLevel() const
+{
+    return Stat->GetCurrentLevel();
+}
+
+void AABCharacterBase::SetLevel(int32 InNewLevel)
+{
+    Stat->SetLevelStat(InNewLevel);
 }
 
 
