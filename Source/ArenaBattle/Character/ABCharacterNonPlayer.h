@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/ABCharacterBase.h"
 
+#include <Interface/ABCharacterAIInterface.h>
 #include <Engine/StreamableManager.h>
 #include "ABCharacterNonPlayer.generated.h"
 
@@ -12,7 +13,7 @@
  * 
  */
 UCLASS(Config = ArenaBattle)
-class ARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase
+class ARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase, public IABCharacterAIInterface
 {
 	GENERATED_BODY()
 	    
@@ -36,4 +37,24 @@ protected:
 
     //배열에 채워진 경로 값을 활용해 에셋을 비동기로 로드할 때 사용할 핸들
     TSharedPtr<FStreamableHandle> NPCMeshHandle;
+
+    //AI섹션
+protected:
+
+    float GetAIPatrolRadius() override;
+    float GetAIDetectRange() override;
+    float GetAIAttackRange() override;
+    float GetAITurnSpeed() override;
+    virtual void AttackByAI() override;
+    virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
+
+    //공격 끝나는 시점에 호출되는 함수 오버라이드
+    virtual void NotifyComboActionEnd() override;
+
+
+    //공격 종료 시에 호출할 델리게이트
+    FAICharacterAttackFinished OnAttackFinished;
+
+
+
 };

@@ -36,6 +36,8 @@ public:
 
     FORCEINLINE int32 GetCurrentLevel() const { return CurrentLevel; }
 
+    FORCEINLINE int32 GetAttackRadius() const { return AttackRadius; }
+
     FORCEINLINE float GetCurrentHp() const { return CurrentHp; }
 
     //부가 스탯 데이터  설정 함수
@@ -80,6 +82,12 @@ protected:
     UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
     int32 CurrentLevel;
 		
+
+    //공격 반경
+    UPROPERTY(VisibleInstanceOnly, Category = "Stat")
+    float AttackRadius;
+
+
     //캐릭터의 기본 스탯 데이터
     UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
     FABCharacterStat BaseStat;
