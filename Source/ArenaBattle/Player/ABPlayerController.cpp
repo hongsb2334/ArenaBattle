@@ -2,6 +2,22 @@
 
 
 #include "Player/ABPlayerController.h"
+#include "UI/ABHUDWidget.h"
+
+AABPlayerController::AABPlayerController()
+{
+    //위젯 블루프린트 에셋에서 클래스 정보 바인딩(연결)
+    static ConstructorHelpers::FClassFinder<UABHUDWidget> ABHUDWidgetRef(
+        //클래스 경로 가져올때는 _C 붙이기
+        TEXT("/Game/ArenaBattle/UI/WBP_ABHUD.WBP_ABHUD_C")
+    );
+
+    //로드 성공하면 클래스 설정
+    if (ABHUDWidgetRef.Succeeded())
+    {
+        ABHUDWidgetClass = ABHUDWidgetRef.Class;
+    }
+}
 
 void AABPlayerController::BeginPlay()
 {
@@ -10,4 +26,13 @@ void AABPlayerController::BeginPlay()
     //입력 설정
     FInputModeGameOnly GameOnlyInputMode;
     SetInputMode(GameOnlyInputMode);
+
+    //위젯 생성
+    ABHUDWidget = CreateWidget<UABHUDWidget>(this, ABHUDWidgetClass);
+
+    //문제없이 생성됐다면 화면에 추가
+    if (nullptr != ABHUDWidget)
+    {
+        ABHUDWidget->AddToViewport();
+    }
 }

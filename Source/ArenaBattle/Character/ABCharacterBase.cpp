@@ -219,6 +219,9 @@ void AABCharacterBase::SetDead()
     //콜리전 끄기
     SetActorEnableCollision(false);
 
+    //HPBar 끄기
+    HpBar->SetHiddenInGame(true);
+
 
 }
 

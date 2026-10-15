@@ -3,6 +3,9 @@
 
 #include "Character/ABCharacterPlayer.h"
 #include "ABCharacterData.h"
+#include <UI/ABHUDWidget.h>
+#include <CharacterStat/ABCharacterStatComponent.h>
+
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
@@ -114,10 +117,35 @@ void AABCharacterPlayer::BeginPlay()
 {
     Super::BeginPlay();
 
+    //입력 활성화를 위해 플레이어 컨트롤러 참조 얻기
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    
+    if (nullptr != PlayerController)
+    {
+        //캐릭터가 죽으면 입력이 되지 않도록 비활성화
+        EnableInput(PlayerController);
+    }
+
+
+
     //초기 입력 컨트롤 설정
     SetCharacterControl(CurrentCharacterControlType);
     
     
+
+}
+
+void AABCharacterPlayer::SetDead()
+{
+    Super::SetDead();
+
+    //입력 비활성화를 위해 플레이어 컨트롤러 참조 얻기
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (nullptr != PlayerController)
+    {
+        //캐릭터가 죽으면 입력이 되지 않도록 비활성화
+        DisableInput(PlayerController);
+    }
 
 }
 
@@ -291,4 +319,22 @@ void AABCharacterPlayer::ChangeCharacterControl()
 void AABCharacterPlayer::Attack()
 {
     ProcessComboCommand();
+}
+
+void AABCharacterPlayer::SetupHUDWidget(UABHUDWidget* InHUDWidget)
+{
+    //값 확인 예외처리
+    if (nullptr == InHUDWidget)
+    {
+        return;
+    }
+
+    //스탯 정보 UI에 전달
+    InHUDWidget->UpdateStat(Stat->GetBaseStat(), Stat->GetModifierStat());
+    InHUDWidget->UpdateHpBar(Stat->GetCurrentHp());
+
+
+    //델리게이트 등록 처리
+    Stat->OnStatChanged.AddUObject(InHUDWidget, &UABHUDWidget::UpdateStat);
+    Stat->OnHpChanged.AddUObject(InHUDWidget, &UABHUDWidget::UpdateHpBar);
 }
